@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/base.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="js/utils.js" defer></script>
+    <script src="js/index.js" defer></script>
+    <title>Payment</title>
+  </head>
+  <body>
+    <center>
+      <main>
+        <div id="messages" role="alert" style="display: none"></div>
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" required />
+        <button id="generate-qr" type="submit">Generate QR Code</button>
+
+        <div id="qr-container"></div>
+        <a id="payment-link" target="_blank"></a>
+        <button id="goto" type="submit">I recieved my payment</button>
+        <h1>EXTRA</h1>
+      </main>
+    </center>
+    <script>
+      // Get the button element by its ID
+      const gotoButton = document.getElementById('goto');
+
+      // Add a click event listener to the button
+      gotoButton.addEventListener('click', () => {
+        // Redirect to localhost:3000
+        window.location.href = 'http://localhost:3000';
+      });
+    </script>
+    <script>
+      var link = '';
+      async function pollPaymentStatus() {
+        const interval = 10000; // Polling interval in milliseconds (10 seconds)
+        while (true) {
+          try {
+            const response = await fetch(`/api/check-payment-status`);
+            const data = await response.json();
+            console.log('Payment status:', data.status);
+
+            if (data.status === 'succeeded') {
+              alert('Payment succeeded!');
+              break; // Exit the loop if payment is succeeded
+            }
+          } catch (error) {
+            console.error('Error polling payment status:', error);
+          }
+          await new Promise((resolve) => setTimeout(resolve, interval));
+        }
+      }
+
+      document
+        .getElementById('generate-qr')
+        .addEventListener('click', async () => {
+          try {
+            const amount = document.getElementById('amount').value;
+            const response = await fetch(
+              `/generate-payment-link?amount=${amount}`
+            );
+            const data = await response.json();
+
+            const qrContainer = document.getElementById('qr-container');
+            qrContainer.innerHTML = `<img src="${data.qrCodeDataURL}" alt="Payment QR Code">`;
+
+            const paymentLinkElement = document.getElementById('payment-link');
+            paymentLinkElement.href = data.paymentLinkURL;
+            link = data.paymentLinkURL;
+            paymentLinkElement.textContent =
+              'Click here to open the payment link';
+
+            // Start polling for payment status
+            // pollPaymentStatus();
+          } catch (error) {
+            console.error('Error generating QR code:', error);
+          }
+        });
+    </script>
+  </body>
+</html>
