@@ -3,7 +3,7 @@
 **Smart Invest BR** is a comprehensive financial advisory platform powered by AI and tailored for personalized financial insights. The system leverages advanced technologies to help users define, track, and achieve their financial goals with ease.
 
 ---
-![Architecture Diagram]()
+![Architecture Diagram](client-react/public/assets/arch.png)
 
 ## Key Features
 
